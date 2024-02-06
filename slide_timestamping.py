@@ -52,10 +52,10 @@ def get_initial_slide_timestamps(video_path):
     
     return True, slide_transitions
 
-if __name__ == "__main__":
-    result, slide_timestamps = get_initial_slide_timestamps("./static/iml_video.mp4")
+# if __name__ == "__main__":
+#     result, slide_timestamps = get_initial_slide_timestamps("video.mp4")
     
-    if result:
-        print(slide_timestamps)
-    else:
-        print("Fetching slide timestamps failed")
+#     if result:
+#         print(slide_timestamps)
+#     else:
+#         print("Fetching slide timestamps failed")

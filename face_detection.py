@@ -1,7 +1,6 @@
 import cv2
 import numpy as np 
 from collections import OrderedDict
-import matplotlib.pyplot as plt
 
 class FaceDetector():
     def __init__(self):
