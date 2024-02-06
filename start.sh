@@ -1,3 +1,3 @@
-source .venv/bin/activate
-pip install -r requirements.txt
-hug -f index.py
+source summentia-back/.venv/bin/activate
+pip install -r summentia-back/requirements.txt
+hug -f summentia-back/index.py
