@@ -5,3 +5,8 @@ opencv-python==4.9.0.80
 torch==2.2.0
 torchvision==0.17.0
 hug==2.6.1
+Pillow==9.0.1
+tensorflow==2.15.0
+matplotlib==3.8.2
+keras==2.15.0
+scikit-learn==1.4.0
