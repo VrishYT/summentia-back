@@ -1,12 +1,9 @@
-import itertools
-
 import numpy as np
 import cv2
 import json
 
 from os import listdir
 from os.path import isfile, join
-from sortedcontainers import SortedDict
 
 from SliTraNet.data.data_utils import *
 from face_detection import FaceDetector
