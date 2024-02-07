@@ -79,8 +79,8 @@ def combine_timestamps(slide_transitions, frames, slides_json):
     
     return timestamps
 
-# Identifies the initial timestamp of each slide, taken from a video
-def get_initial_slide_timestamps(video_path, slides_json):
+# Identifies the timestamp of each slide, taken from a video
+def get_slide_timestamps(video_path, slides_json):
     # Get bounding box of the video with the face overlay cropped out
     bounding_box = get_bounding_box(video_path)
     
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         ]
     }
     """
-    result, slide_timestamps = get_initial_slide_timestamps("video.mp4", slides_json)
+    result, slide_timestamps = get_slide_timestamps("video.mp4", slides_json)
     if result:
         print(slide_timestamps)
     else:
