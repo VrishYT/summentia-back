@@ -56,7 +56,7 @@ def combine_timestamps(slide_transitions, frames, slides_json):
         if (len(frames) - 1 - frame_index == num_slides - 1 - slide_index):
             while frame_index < len(frames):
                 start, end = slide_transitions[frame_index]
-                timestamps.append({"start": start, "end": end})
+                timestamps.append({"start": int(start), "end": int(end)})
                 frame_index +=1
             break
         
@@ -74,7 +74,7 @@ def combine_timestamps(slide_transitions, frames, slides_json):
         
         start1, _ = slide_transitions[next_frame_to_merge]
         _, end2 = slide_transitions[frame_index - 1]
-        timestamps.append({"start": start1, "end": end2})
+        timestamps.append({"start": int(start1), "end": int(end2)})
         next_frame_to_merge = frame_index
     
     return timestamps
