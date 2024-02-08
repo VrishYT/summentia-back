@@ -94,7 +94,7 @@ def get_slide_timestamps(video_path, slides_json):
     cap = cv2.VideoCapture(video_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
     
-    # Map the dictionary values to be the start and end timestamp of the slide in seconds
+    # Crop each frame and save the cropped frame as an image, storing the path
     slide_transitions.pop(-1, None)
     frame_paths = []
     for slide_no, (start, end) in slide_transitions.items():
@@ -102,7 +102,6 @@ def get_slide_timestamps(video_path, slides_json):
         frame_path = f"frames/cropped_frame{slide_no}.png"
         cv2.imwrite(frame_path, frame)
         frame_paths.append(frame_path)
-        slide_transitions[slide_no] = (start / fps, end / fps)
     
     combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json) 
     
