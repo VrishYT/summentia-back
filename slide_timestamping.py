@@ -2,8 +2,7 @@ import numpy as np
 import cv2
 import json
 
-from os import listdir
-from os.path import isfile, join
+import os
 
 from SliTraNet.data.data_utils import *
 from face_detection import FaceDetector
@@ -56,7 +55,8 @@ def combine_timestamps(slide_transitions, frames, slides_json):
     for slide_index in range(len(slides)):
         if (len(frames) - 1 - frame_index == num_slides - 1 - slide_index):
             while frame_index < len(frames):
-                timestamps.append(slide_transitions[frame_index])
+                start, end = slide_transitions[frame_index]
+                timestamps.append({"start": start, "end": end})
                 frame_index +=1
             break
         
@@ -79,6 +79,12 @@ def combine_timestamps(slide_transitions, frames, slides_json):
     
     return timestamps
 
+def save_frame(frame, dir, file_name):
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+    
+    cv2.imwrite(dir + file_name, frame)
+
 # Identifies the timestamp of each slide, taken from a video
 def get_slide_timestamps(video_path, slides_json):
     # Get bounding box of the video with the face overlay cropped out
@@ -99,9 +105,10 @@ def get_slide_timestamps(video_path, slides_json):
     frame_paths = []
     for slide_no, (start, end) in slide_transitions.items():
         frame = crop_frame(get_frame(cap, start), *bounding_box)
-        frame_path = f"frames/cropped_frame{slide_no}.png"
-        cv2.imwrite(frame_path, frame)
-        frame_paths.append(frame_path)
+        dir = "frames/"
+        file_name = f"cropped_frame{slide_no}.png"
+        save_frame(frame, dir, file_name)
+        frame_paths.append(dir + file_name)
     
     combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json) 
     
