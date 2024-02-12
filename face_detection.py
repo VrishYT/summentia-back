@@ -1,6 +1,5 @@
 import cv2
-import numpy as np 
-from collections import OrderedDict
+import numpy as np
 
 class FaceDetector():
     def __init__(self):

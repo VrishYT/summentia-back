@@ -27,7 +27,7 @@ def crop_frame(frame, x1, y1, x2, y2):
 def crop_frames(frames, x1, y1, x2, y2):
     return frames[:,y1:y2, x1:x2] 
 
-def determine_load_size_roi(videofile, roi, patch_size, full_size=False):
+def determine_load_size_roi(videofile, roi, patch_size=256, full_size=False):
     _,name = os.path.split(videofile)
     base,_ = os.path.splitext(name)
 
