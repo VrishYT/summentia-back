@@ -1,12 +1,10 @@
 import cv2
 import pytesseract
-import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 def convert_to_text(image_path):
     img = cv2.imread(image_path)
-    img = cv2.resize(img, (400, 450))
     text = pytesseract.image_to_string(img)
     return text
 
