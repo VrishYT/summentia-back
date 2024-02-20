@@ -6,7 +6,7 @@ import os
 
 from SliTraNet.data.data_utils import *
 from face_detection import FaceDetector
-from slide_similarity import ImageComparator
+from slide_similarity import ImageComparator, SlideComparator
 import SliTraNet.slide_detection_2d as SliTraNet
 
 # Calculate the x coordinates that have been cropped to not include x1 and x2
@@ -89,7 +89,7 @@ def save_frame(frame, dir, file_name):
 def get_slide_timestamps(video_path, slides_json):
     # Get bounding box of the video with the face overlay cropped out
     bounding_box = get_bounding_box(video_path)
-    
+
     # Attempt to find the initial slide transitions using the neural network
     try:
         slide_transitions = SliTraNet.test_resnet2d(video_path, bounding_box)
@@ -110,9 +110,53 @@ def get_slide_timestamps(video_path, slides_json):
         save_frame(frame, dir, file_name)
         frame_paths.append(dir + file_name)
     
-    combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json) 
+    # combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json)
+    combined_timestamps = match_frames(slide_transitions, frame_paths, slides_json)
     
     return True, combined_timestamps
+
+def match_frames(slide_transitions, frames, slides_json):
+    comparator = SlideComparator()
+        
+    
+    slides_info = json.loads(slides_json)
+    slides = slides_info["slides"]
+    num_slides = slides_info["num_slides"]
+    
+    currentSlide = 0
+
+    def compareTillMatch(frameNo, slideNo, gap=1):
+        if slideNo + gap < num_slides:
+            is_similar = comparator.get_similarity_score(frames[i], slides[slideNo + gap])
+            if is_similar:
+                return slideNo + gap
+
+        if slideNo - gap >= 0:
+            is_similar = comparator.get_similarity_score(frames[i], slides[slideNo - gap])
+            if is_similar:
+                return slideNo - gap
+
+        if gap * 2  > num_slides:
+            return -1
+        else:
+            return compareTillMatch(frameNo, slideNo, gap + 1)#
+
+    timestamps = {}
+    for i in range(len(frames)):
+        is_similar = comparator.get_similarity_score(frames[i], slides[currentSlide])
+        if not is_similar:
+            match = compareTillMatch(i, currentSlide)
+
+            if (match != -1):
+                currentSlide = match
+
+
+            start, end = slide_transitions[i]
+            if (timestamps[currentSlide] is not None):
+                timestamps[currentSlide] = []
+            timestamps[currentSlide].append({"start": int(start), "end": int(end)})
+
+    return timestamps
 
 if __name__ == "__main__":
     slides_json = """{
