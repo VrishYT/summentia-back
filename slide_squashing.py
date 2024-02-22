@@ -1,18 +1,17 @@
 import json
-from slide_similarity import ImageComparator
+from slide_similarity import SlideComparator
 
 # filter the slides in order to remove any transitions and squash similar slides
 def squash_slides(slides_json):
-    comparator = ImageComparator()
+    comparator = SlideComparator()
     slides_info = json.loads(slides_json)
     slides = slides_info["slides"]
     num_slides = slides_info["num_slides"]
-    threashold = 0.78
     filtered_slides = []
 
     for slide_index in range(num_slides-1):
         score = comparator.get_similarity_score(slides[slide_index], slides[slide_index+1])
-        if(score< threashold):
+        if (not score):
             filtered_slides.append(slides[slide_index])
         print("Slide", slide_index, "- slide", slide_index+1, ":", score)
     #we always add the last slide as there can be no transition coming afterwards, and so it cant be squashed
@@ -68,7 +67,6 @@ if __name__ == "__main__":
             "output_image_page_37.png",
             "output_image_page_38.png",
             "output_image_page_39.png",
-            
             "output_image_page_40.png",
             "output_image_page_41.png",
             "output_image_page_42.png",
@@ -79,7 +77,6 @@ if __name__ == "__main__":
             "output_image_page_47.png",
             "output_image_page_48.png",
             "output_image_page_49.png",
-
             "output_image_page_50.png",
             "output_image_page_51.png",
             "output_image_page_52.png",
@@ -90,7 +87,6 @@ if __name__ == "__main__":
             "output_image_page_57.png",
             "output_image_page_58.png",
             "output_image_page_59.png",
-
             "output_image_page_60.png",
             "output_image_page_61.png",
             "output_image_page_62.png",
@@ -101,7 +97,6 @@ if __name__ == "__main__":
             "output_image_page_67.png",
             "output_image_page_68.png",
             "output_image_page_69.png",
-
             "output_image_page_70.png",
             "output_image_page_71.png",
             "output_image_page_72.png",
@@ -112,7 +107,6 @@ if __name__ == "__main__":
             "output_image_page_77.png",
             "output_image_page_78.png",
             "output_image_page_79.png",
-
             "output_image_page_80.png",
             "output_image_page_81.png",
             "output_image_page_82.png",
@@ -123,7 +117,6 @@ if __name__ == "__main__":
             "output_image_page_87.png",
             "output_image_page_88.png",
             "output_image_page_89.png",
-
             "output_image_page_90.png",
             "output_image_page_91.png",
             "output_image_page_92.png",
