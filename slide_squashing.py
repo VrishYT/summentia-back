@@ -2,9 +2,8 @@ import json
 from slide_similarity import SlideComparator
 
 # filter the slides in order to remove any transitions and squash similar slides
-def squash_slides(slides_json):
+def squash_slides(slides_info):
     comparator = SlideComparator()
-    slides_info = json.loads(slides_json)
     slides = slides_info["slides"]
     num_slides = slides_info["num_slides"]
     filtered_slides = []
