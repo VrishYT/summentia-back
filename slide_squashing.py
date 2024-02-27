@@ -9,10 +9,10 @@ def squash_slides(slides_info):
     filtered_slides = []
 
     for slide_index in range(num_slides-1):
-        score = comparator.get_similarity_score(slides[slide_index], slides[slide_index+1])
-        if (not score):
+        is_similar = comparator.is_similar(slides[slide_index], slides[slide_index+1])
+        if (not is_similar):
             filtered_slides.append(slides[slide_index])
-        print("Slide", slide_index, "- slide", slide_index+1, ":", score)
+        print("Slide", slide_index, "- slide", slide_index+1, ":", is_similar)
     #we always add the last slide as there can be no transition coming afterwards, and so it cant be squashed
     filtered_slides.append(slides[-1])
     filtered_slides_json = {
