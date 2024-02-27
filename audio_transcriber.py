@@ -10,7 +10,7 @@ model_size = "large-v3"
 # or run on CPU with INT8
 model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
-def get_transcripts_from_segments(file_count, out_index=1):
+def get_transcripts_from_segments(file_count, out_index=0):
     transcripts = {}
     
     for i in range(out_index, file_count + out_index):
@@ -20,7 +20,7 @@ def get_transcripts_from_segments(file_count, out_index=1):
         print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
 
         for segment in segments:
-            print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
+            # print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
             output += segment.text
             
         transcripts[i] = output
@@ -28,4 +28,4 @@ def get_transcripts_from_segments(file_count, out_index=1):
     return transcripts
         
 if __name__ == "__main__":
-    get_transcripts_from_segments(4)
+    get_transcripts_from_segments(7, 0)
