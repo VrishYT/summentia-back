@@ -1,50 +1,40 @@
-import numpy as np
-from PIL import Image
-from tensorflow.keras.preprocessing import image
+from image_similarity import ImageComparator
+from text_similarity import convert_to_text, get_ocr_similarity_score
 
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-
-from keras.applications.vgg16 import VGG16
-from sklearn.metrics.pairwise import cosine_similarity
-
-class ImageComparator():
+class SlideComparator():
     def __init__(self):
-        self._vgg16 = VGG16(weights='imagenet', include_top=False, 
-                           pooling='max', input_shape=(224, 224, 3))
-        
-        for model_layer in self._vgg16.layers:
-            model_layer.trainable = False
-    
-    # Load the image provided
-    def _load_image(self, image_path):
-        input_image = Image.open(image_path)
-        rgb_image = input_image.convert("RGB")
-        resized_image = rgb_image.resize((224, 224))
+        self.imageComparator = ImageComparator()
 
-        return resized_image
-
-    # Convert image into 3D array and add additional dimension for model input
-    def _get_image_embeddings(self, object_image):
-        image_array = np.expand_dims(image.img_to_array(object_image), axis = 0)
-        image_embedding = self._vgg16.predict(image_array)
-
-        return image_embedding
-    
-    def show_image(aelf, image_path):
-        image = mpimg.imread(image_path)
-        imgplot = plt.imshow(image)
-        plt.show()
-
-    # Takes image array and computes its embedding using VGG16 model
     def get_similarity_score(self, first_image_path, second_image_path):
-        first_image = self._load_image(first_image_path)
-        second_image = self._load_image(second_image_path)
+        text1 = convert_to_text(first_image_path)
+        text2 =  convert_to_text(second_image_path)
+        text_score = get_ocr_similarity_score(text1, text2)
+        image_score = self.imageComparator.get_similarity_score(first_image_path, second_image_path)
+        return text_score, image_score
+    
+    def is_similar(self, first_image_path, second_image_path, slide_slide_comp=True):
+        if slide_slide_comp:
+            TEXT_MATCH_PROB = 0.9
+            TEXT_IGNORE_PROB = 0.01
+            IMAGE_SAFE_MATCH_PROB = 0.91
+            IMAGE_MATCH_PROB = 0.945
+        else:
+            TEXT_MATCH_PROB = 0.8
+            TEXT_IGNORE_PROB = 0.01
+            IMAGE_SAFE_MATCH_PROB = 0.85
+            IMAGE_MATCH_PROB = 0.9
         
-        first_image_vector = self._get_image_embeddings(first_image)
-        second_image_vector = self._get_image_embeddings(second_image)
+        text_score, image_score = self.get_similarity_score(first_image_path, second_image_path)
         
-        similarity_score = cosine_similarity(first_image_vector, 
-                                             second_image_vector).reshape(1, )
+        return text_score > TEXT_MATCH_PROB  or (text_score < TEXT_IGNORE_PROB and image_score > IMAGE_SAFE_MATCH_PROB) or image_score > IMAGE_MATCH_PROB
 
-        return similarity_score
+
+if __name__ == "__main__":
+    # shouldMatch = True
+    slideComparator = SlideComparator()
+    image1 = 'frames/cropped_frame213.png'
+    image2 = 'Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-45.png'
+    text_score, image_score, result = slideComparator.get_similarity_score(image1, image2)
+    print(result)
+    # with open("slide_similarities.csv", "a") as f:
+    #     # f.write(f"{TEXT_MATCH_PROB},{TEXT_IGNORE_PROB},{IMAGE_SAFE_MATCH_PROB},{IMAGE_MATCH_PROB},{image1},{image2},{text_score},{image_score},{result},{shouldMatch}\n")

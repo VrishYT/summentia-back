@@ -5,6 +5,7 @@ import json
 import slide_api
 import audio_api
 
+
 api = hug.API(__name__)
 
 @hug.response_middleware()
@@ -22,3 +23,18 @@ def audio_api():
     return [audio_api]
 
 # print("https://localhost:8000")
+# @hug.post('/get_timestamps')
+# def get_timestamps(video_path, slides_json):
+#     result, slide_timestamps = get_slide_timestamps(video_path, slides_json)
+    
+#     if result:
+#         return {'data': json.dumps(slide_timestamps)}
+#     else:
+#         return "Fetching slide timestamps failed"
+    
+# @hug.post('/get_timestamps')
+# def get_timestamps(video_path, slides_path):
+#     slides_json = convert_pdf_to_png(slides_path, slides_path.split('.')[0])
+    
+    
+print("https://localhost:8000")
