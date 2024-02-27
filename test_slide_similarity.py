@@ -50,7 +50,7 @@ def test_squashing_10():
 def test_squashing_11():
     result = comparator.get_similarity_score('Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-44.png', 
                                              'Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-45.png')
-    assert result
+    assert not result
 
 def test_squashing_12():
     result = comparator.get_similarity_score('Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-53.png', 
