@@ -115,11 +115,9 @@ def get_slide_timestamps(video_path, slides_json):
     
     return True, combined_timestamps
 
-def match_frames(slide_transitions, frames, slides_json):
+def match_frames(slide_transitions, frames, slides_info):
     comparator = SlideComparator()
         
-    
-    slides_info = json.loads(slides_json)
     slides = slides_info["slides"]
     num_slides = slides_info["num_slides"]
     
@@ -127,12 +125,12 @@ def match_frames(slide_transitions, frames, slides_json):
 
     def compareTillMatch(frameNo, slideNo, gap=1):
         if slideNo + gap < num_slides:
-            is_similar = comparator.get_similarity_score(frames[i], slides[slideNo + gap])
+            is_similar = comparator.is_similar(frames[i], slides[slideNo + gap], False)
             if is_similar:
                 return slideNo + gap
 
         if slideNo - gap >= 0:
-            is_similar = comparator.get_similarity_score(frames[i], slides[slideNo - gap])
+            is_similar = comparator.is_similar(frames[i], slides[slideNo - gap], False)
             if is_similar:
                 return slideNo - gap
 
@@ -143,18 +141,18 @@ def match_frames(slide_transitions, frames, slides_json):
 
     timestamps = {}
     for i in range(len(frames)):
-        is_similar = comparator.get_similarity_score(frames[i], slides[currentSlide])
+        is_similar = comparator.is_similar(frames[i], slides[currentSlide], False)
         if not is_similar:
             match = compareTillMatch(i, currentSlide)
 
             if (match != -1):
                 currentSlide = match
 
-
-            start, end = slide_transitions[i]
-            if (timestamps[currentSlide] is not None):
-                timestamps[currentSlide] = []
-            timestamps[currentSlide].append({"start": int(start), "end": int(end)})
+        start, end = slide_transitions[currentSlide]
+            
+        if (timestamps[currentSlide] is not None):
+            timestamps[currentSlide] = []
+        timestamps[currentSlide].append({"start": int(start), "end": int(end)})
 
     return timestamps
 
