@@ -11,6 +11,10 @@ def convert_to_text(image_path):
 def get_ocr_similarity_score(text1, text2):
     # Convert the texts into TF-IDF vectors
     vectorizer = TfidfVectorizer()
+    
+    if text1 == text2:
+        return 1
+    
     vectors = vectorizer.fit_transform([text1, text2])
     # Calculate the cosine similarity between the vectors
     similarity = cosine_similarity(vectors)
