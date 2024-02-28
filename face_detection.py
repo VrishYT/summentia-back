@@ -22,7 +22,7 @@ class FaceDetector():
             
             bounding_box = self.detect_bounding_box(video_frame)
             if not isinstance(bounding_box, tuple):
-                if len(bounding_box) == 0:
+                if len(boxes) == 0:
                     boxes = bounding_box 
                 else:
                     boxes = np.concatenate((boxes, bounding_box), axis=0)
