@@ -155,7 +155,9 @@ def match_frames(slide_transitions, frames, slides_info):
 
         start, end = slide_transitions[i]
             
-        timestamps.setdefault(currentSlide, [])
+        if (currentSlide not in timestamps):
+            timestamps[currentSlide] = []
+            
         timestamps[currentSlide].append({"start": int(start), "end": int(end)})
 
     return timestamps
