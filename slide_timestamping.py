@@ -109,6 +109,7 @@ def get_slide_timestamps(video_path, slides_json):
         file_name = f"cropped_frame{slide_no}.png"
         save_frame(frame, dir, file_name)
         frame_paths.append(dir + file_name)
+    print(slide_transitions)
     print(frame_paths)
     # combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json)
     combined_timestamps = match_frames(slide_transitions, frame_paths, slides_json)
@@ -150,7 +151,7 @@ def match_frames(slide_transitions, frames, slides_info):
 
         start, end = slide_transitions[currentSlide]
             
-        if (not timestamps.has_key(currentSlide)):
+        if (currentSlide not in timestamps):
             timestamps[currentSlide] = []
         timestamps[currentSlide].append({"start": int(start), "end": int(end)})
 
