@@ -21,10 +21,11 @@ class FaceDetector():
                 break
             
             bounding_box = self.detect_bounding_box(video_frame)
-            if curr_frame == 0:
-                boxes = bounding_box
-            elif len(bounding_box) != 0:
-                boxes = np.concatenate((boxes, bounding_box), axis=0)
+            if not isinstance(bounding_box, tuple):
+                if len(bounding_box) == 0:
+                    boxes = bounding_box 
+                else:
+                    boxes = np.concatenate((boxes, bounding_box), axis=0)
                 
             curr_frame += fps
             vidObj.set(cv2.CAP_PROP_POS_FRAMES, curr_frame)
