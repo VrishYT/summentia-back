@@ -149,7 +149,7 @@ def match_frames(slide_transitions, frames, slides_info):
             if (match != -1):
                 currentSlide = match
 
-        start, end = slide_transitions[currentSlide]
+        start, end = slide_transitions[i]
             
         if (currentSlide not in timestamps):
             timestamps[currentSlide] = []
