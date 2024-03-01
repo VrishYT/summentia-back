@@ -22,16 +22,20 @@ def get_cropped_x_coords(x0, x1, frame_x0=0, frame_x1=852):
 
 # Calulate the bounding box that excludes the face overlay
 def get_bounding_box(video_path):
+    cap = cv2.VideoCapture(video_path)
     face_detector = FaceDetector()
     bounding_boxes = face_detector.detect_face(video_path)
     
-    # Only interested in the x coordinates of the bounding box (delete second and last column)
-    x_coords = np.delete(bounding_boxes, np.s_[1::2], axis=1)
-    m_x, m_w = np.median(x_coords, axis=0)
+    if len(bounding_boxes) == 0:
+        bounding_box = [0, 0, cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]
+    else:
+        # Only interested in the x coordinates of the bounding box (delete second and last column)
+        x_coords = np.delete(bounding_boxes, np.s_[1::2], axis=1)
+        m_x, m_w = np.median(x_coords, axis=0)
+        
+        x0, x1 = get_cropped_x_coords(m_x, m_x + m_w, frame_x1=cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        bounding_box = [x0, 0, x1, cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]
     
-    cap = cv2.VideoCapture(video_path)
-    x0, x1 = get_cropped_x_coords(m_x, m_x + m_w, frame_x1=cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    bounding_box = [x0, 0, x1, cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]
     return np.array([round(x) for x in bounding_box])
 
 def get_frame(video_capture, frame_id):
@@ -153,6 +157,7 @@ def match_frames(slide_transitions, frames, slides_info):
             
         if (currentSlide not in timestamps):
             timestamps[currentSlide] = []
+            
         timestamps[currentSlide].append({"start": int(start), "end": int(end)})
 
     return timestamps
