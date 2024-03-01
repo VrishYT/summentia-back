@@ -3,6 +3,7 @@ import cv2
 import json
 
 import os
+from slide_squashing import squash_slides
 
 from SliTraNet.data.data_utils import *
 from face_detection import FaceDetector
@@ -43,41 +44,41 @@ def get_frame(video_capture, frame_id):
     
     return frame
 
-# assumes that the path is a path to a directory
-def combine_timestamps(slide_transitions, frames, slides_json):
-    comparator = ImageComparator()
-    slides_info = json.loads(slides_json)
-    slides = slides_info["slides"]
-    num_slides = slides_info["num_slides"]
-    timestamps = []
-    frame_index = 0
-    next_frame_to_merge = 0
-    for slide_index in range(len(slides)):
-        if (len(frames) - 1 - frame_index == num_slides - 1 - slide_index):
-            while frame_index < len(frames):
-                start, end = slide_transitions[frame_index]
-                timestamps.append({"start": int(start), "end": int(end)})
-                frame_index +=1
-            break
+# # assumes that the path is a path to a directory
+# def combine_timestamps(slide_transitions, frames, slides_json):
+#     comparator = ImageComparator()
+#     slides_info = json.loads(slides_json)
+#     slides = slides_info["slides"]
+#     num_slides = slides_info["num_slides"]
+#     timestamps = []
+#     frame_index = 0
+#     next_frame_to_merge = 0
+#     for slide_index in range(len(slides)):
+#         if (len(frames) - 1 - frame_index == num_slides - 1 - slide_index):
+#             while frame_index < len(frames):
+#                 start, end = slide_transitions[frame_index]
+#                 timestamps.append({"start": int(start), "end": int(end)})
+#                 frame_index +=1
+#             break
         
-        while frame_index < len(frames):
-            frame_path = frames[frame_index]
-            score = comparator.get_similarity_score(slides[slide_index], frame_path)
-            if (score[0] > 0.8):
-                frame_index+=1
-            else:
-                second_score = comparator.get_similarity_score(slides[slide_index+1], frame_path)
-                if (score > second_score):
-                    frame_index+=1
-                else:
-                    break
+#         while frame_index < len(frames):
+#             frame_path = frames[frame_index]
+#             score = comparator.get_similarity_score(slides[slide_index], frame_path)
+#             if (score[0] > 0.8):
+#                 frame_index+=1
+#             else:
+#                 second_score = comparator.get_similarity_score(slides[slide_index+1], frame_path)
+#                 if (score > second_score):
+#                     frame_index+=1
+#                 else:
+#                     break
         
-        start1, _ = slide_transitions[next_frame_to_merge]
-        _, end2 = slide_transitions[frame_index - 1]
-        timestamps.append({"start": int(start1), "end": int(end2)})
-        next_frame_to_merge = frame_index
+#         start1, _ = slide_transitions[next_frame_to_merge]
+#         _, end2 = slide_transitions[frame_index - 1]
+#         timestamps.append({"start": int(start1), "end": int(end2)})
+#         next_frame_to_merge = frame_index
     
-    return timestamps
+#     return timestamps
 
 def save_frame(frame, dir, file_name):
     if not os.path.exists(dir):
@@ -111,7 +112,11 @@ def get_slide_timestamps(video_path, slides_json):
         frame_paths.append(dir + file_name)
     print(slide_transitions)
     print(frame_paths)
-    # combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json)
+
+    if not slides_json:
+        return True, slide_transitions, frame_paths
+
+    # squashed_json = squash_slides(slides_json)
     combined_timestamps = match_frames(slide_transitions, frame_paths, slides_json)
     
     return True, combined_timestamps
@@ -140,7 +145,9 @@ def match_frames(slide_transitions, frames, slides_info):
         else:
             return compareTillMatch(frameNo, slideNo, gap + 1)#
 
+    
     timestamps = {}
+    
     for i in range(len(frames)):
         is_similar = comparator.is_similar(frames[i], slides[currentSlide], False)
         if not is_similar:
