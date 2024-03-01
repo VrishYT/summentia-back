@@ -1,3 +1,6 @@
 __pycache__
 .venv/
+*.png
+*.mp4
+*.mp3
 *.Zone.Identifier

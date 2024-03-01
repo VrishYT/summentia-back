@@ -1,4 +1,3 @@
-
 import os 
 from slide_squashing import squash_slides
 from split_pdf import convert_pdf_to_png
