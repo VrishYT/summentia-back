@@ -66,11 +66,11 @@ def combine_timestamps(slide_transitions, frames, slides_json):
         
         while frame_index < len(frames):
             frame_path = frames[frame_index]
-            score = comparator.get_similarity_score(slides[slide_index], frame_path)
+            score = comparator.get_similarity_score(slides[slide_index].get("path"), frame_path)
             if (score[0] > 0.8):
                 frame_index+=1
             else:
-                second_score = comparator.get_similarity_score(slides[slide_index+1], frame_path)
+                second_score = comparator.get_similarity_score(slides[slide_index+1].get("path"), frame_path)
                 if (score > second_score):
                     frame_index+=1
                 else:
@@ -130,12 +130,12 @@ def match_frames(slide_transitions, frames, slides_info):
 
     def compareTillMatch(frameNo, slideNo, gap=1):
         if slideNo + gap < num_slides:
-            is_similar = comparator.is_similar(frames[i], slides[slideNo + gap], False)
+            is_similar = comparator.is_similar(frames[i], slides[slideNo + gap].get("path"), False)
             if is_similar:
                 return slideNo + gap
 
         if slideNo - gap >= 0:
-            is_similar = comparator.is_similar(frames[i], slides[slideNo - gap], False)
+            is_similar = comparator.is_similar(frames[i], slides[slideNo - gap].get("path"), False)
             if is_similar:
                 return slideNo - gap
 
@@ -146,7 +146,7 @@ def match_frames(slide_transitions, frames, slides_info):
 
     timestamps = {}
     for i in range(len(frames)):
-        is_similar = comparator.is_similar(frames[i], slides[currentSlide], False)
+        is_similar = comparator.is_similar(frames[i], slides[currentSlide].get("path"), False)
         if not is_similar:
             match = compareTillMatch(i, currentSlide)
 
