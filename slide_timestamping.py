@@ -95,15 +95,20 @@ def merge_timestamps(curr_frame, curr_slide, timestamps):
 def match_frames(slide_transitions, frames, slides_info):
     comparator = SlideComparator()
 
-    squash_filter = filter(lambda slide: not bool(slide[1].get("squashed")), enumerate(slides_info["slides"]))    
+    squash_filter = [(idx, slide) for idx, slide in enumerate(slides_info["slides"]) if not bool(slide.get("squashed"))]    
     slides = list(map(lambda slide: slide[1].get("path"), squash_filter))
+    print(f"slides: {slides}")
     squashed_indexes = list(map(lambda slide: slide[0], squash_filter))
+    print(f"squashed indexes: {squashed_indexes}")
     num_slides = len(slides)
+    print(f"num_slides: {num_slides}")
     currIndex = 0
     timestamps = []
     
     for i in range(num_slides):
         timestamps.append([])
+    
+    print(f"timestamps {timestamps}")
 
     def compareTillMatch(frameNo, slideNo, gap=1):
         can_go_forward = slideNo + gap < num_slides
