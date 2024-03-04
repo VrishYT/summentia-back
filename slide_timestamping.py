@@ -105,7 +105,7 @@ def match_frames(slide_transitions, frames, slides_info):
     currIndex = 0
     timestamps = []
     
-    for i in range(num_slides):
+    for i in range(slides_info["num_slides"]):
         timestamps.append([])
     
     print(f"timestamps {timestamps}")
