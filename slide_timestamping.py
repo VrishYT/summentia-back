@@ -94,12 +94,16 @@ def merge_timestamps(curr_frame, curr_slide, timestamps):
 
 def match_frames(slide_transitions, frames, slides_info):
     comparator = SlideComparator()
-        
-    slides = list(filter(lambda slide: not bool(slide.get("squashed")), slides_info["slides"]))
+
+    squash_filter = filter(lambda slide: not bool(slide[1].get("squashed")), enumerate(slides_info["slides"]))    
+    slides = list(map(lambda slide: slide[1].get("path"), squash_filter))
+    squashed_indexes = list(map(lambda slide: slide[0], squash_filter))
     num_slides = len(slides)
+    currIndex = 0
+    timestamps = []
     
-    currentSlide = 0
-    num_timestamps = 0
+    for i in range(num_slides):
+        timestamps.append([])
 
     def compareTillMatch(frameNo, slideNo, gap=1):
         can_go_forward = slideNo + gap < num_slides
@@ -120,19 +124,17 @@ def match_frames(slide_transitions, frames, slides_info):
         else:
             return compareTillMatch(frameNo, slideNo, gap + 1)
 
-    timestamps = {}
     for i in range(len(frames)):
-        is_similar = comparator.is_similar(frames[i], slides[currentSlide], False)
+        is_similar = comparator.is_similar(frames[i], slides[currIndex], False)
         should_merge = True
         if not is_similar:
-            match = compareTillMatch(i, currentSlide)
+            match = compareTillMatch(i, currIndex)
 
             if (match != -1):
                 should_merge = False
-                currentSlide = match
+                currIndex = match
 
-        if (currentSlide not in timestamps):
-            timestamps[currentSlide] = []
+        currentSlide = squashed_indexes[currIndex]
             
         if should_merge and len(timestamps[currentSlide]) != 0:
             timestamps = merge_timestamps(slide_transitions[i], currentSlide, timestamps)
