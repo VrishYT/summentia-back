@@ -26,7 +26,7 @@ def squash_slides(slides_info):
 
     #we always add the last slide as there can be no transition coming afterwards, and so it cant be squashed
     new_slide_object = {
-        "path": slides[slide_index].get("path"),
+        "path": slides[-1].get("path"),
         "squashed": False,
     }
     squash_slides.append(new_slide_object)
