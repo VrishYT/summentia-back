@@ -1,13 +1,12 @@
+import shutil
 import hug
-from falcon import HTTP_200
+import falcon
 import json
+from slide_squashing import squash_slides
 from slide_timestamping import *
 from split_pdf import convert_pdf_to_png
-from audio_extractor import extract_audio
-from audio_transcriber import get_transcripts_from_segments
-
-import slide_api
-import audio_api
+from audio_extractor import extract_audio, extract_single_audio
+from audio_transcriber import get_transcripts_from_segments, transcribe
 
 api = hug.API(__name__)
 
@@ -16,25 +15,34 @@ def process_response(request, response, resource):
     response.set_header('Access-Control-Allow-Origin', '*')
     response.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     response.set_header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-    
-# @hug.extend_api('/slides')
-# def slide_api():
-#     return [slide_api]
 
-# @hug.extend_api('/audio')
-# def audio_api():
-#     return [audio_api]
-
-@hug.post('/get_timestamps')
-def get_timestamps(video_path, slides_path):
-    slides_json = convert_pdf_to_png(slides_path, slides_path.split('.')[0])
+# @hug.post('/get_timestamps')
+# def get_timestamps(video_path, slides_path):
+#     slides_json = convert_pdf_to_png(slides_path, slides_path.split('.')[0])
     
+@hug.get()
+def handshake():
+    print("Handshake completed.")
+    return True
     
-@hug.post('/pipeline')
-def pipeline(video_path, slides_path):
+@hug.post('/process_slides')
+def process_slides(project_folder, response):
     # handle slides to get timestamps
-    slides_json = convert_pdf_to_png(slides_path, slides_path.split('.')[0])
-    _, timestamps = get_slide_timestamps(video_path, slides_json)
+    slides_folder = os.path.join(project_folder, "slides/")
+    if os.path.exists(slides_folder) and os.path.isdir(slides_folder):
+        shutil.rmtree(slides_folder)
+    os.mkdir(slides_folder)
+
+    slides_path = os.path.join(project_folder, "slides.pdf")
+    slides_json = convert_pdf_to_png(slides_path, slides_folder)
+    squashed_json = squash_slides(slides_json)
+
+    video_path = os.path.join(project_folder, "video.mp4")
+    success, timestamps, num_frames = get_slide_timestamps(video_path, squashed_json, project_folder)
+    if not success:
+        response.status = falcon.get_http_status(400)
+        return
+
     # use timestamps to split audio in video 
     file_count = len(timestamps)
     timestamps.pop()
@@ -42,16 +50,20 @@ def pipeline(video_path, slides_path):
     # use Whisper to transcribe audio   
     extract_audio(video_path, frame_options)
     transcripts = get_transcripts_from_segments(file_count, 0)
-    print(transcripts)
-    
-    
-# @hug.get('/happy')
-# def happy_test():
-#     # car = requests.get('http://localhost:8000/slides/hello')
-#     car = slide_api.test_hello()
-#     print(car)
-#     hug.redirect.temporary('/slides/hello')
-#     hug.redirect.to('/audio/hello')
+    return transcripts
+
+@hug.post('/process_noslides')
+def process_noslides(project_folder):
+    print(f"Processing {project_folder}...")
+    audio_path = extract_single_audio(project_folder)
+    print(f"Audio extracted.")
+    transcript = transcribe(audio_path)
+    print("Transcription complete.")
+    return transcript
+
+@hug.post('/process_genslides')
+def process_noslides(video_path):
+    pass
     
 @hug.post('/transcribe')
 def transcribe_video(video_path, slides_json):
@@ -63,30 +75,3 @@ def transcribe_video(video_path, slides_json):
     extract_audio(video_path, frame_options)
     transcripts = get_transcripts_from_segments(file_count, 0)
     print(transcripts)
-    
-# if __name__ == '__main__':
-#     slides_json = """{
-#         "num_slides": 7,
-#         "slides": [
-#             "slides/Slides - Module 2 - K-NN and Decision Trees-01.png",
-#             "slides/Slides - Module 2 - K-NN and Decision Trees-02.png",
-#             "slides/Slides - Module 2 - K-NN and Decision Trees-03.png",
-#             "slides/Slides - Module 2 - K-NN and Decision Trees-04.png",
-#             "slides/Slides - Module 2 - K-NN and Decision Trees-05.png",
-#             "slides/Slides - Module 2 - K-NN and Decision Trees-06.png",
-#             "slides/Slides - Module 2 - K-NN and Decision Trees-07.png"
-#         ]
-#     }
-#     """
-#     transcribe_video("video.mp4", slides_json)
-
-# print("https://localhost:8000")
-# @hug.post('/get_timestamps')
-# def get_timestamps(video_path, slides_json):
-#     result, slide_timestamps = get_slide_timestamps(video_path, slides_json)
-    
-#     if result:
-#         return {'data': json.dumps(slide_timestamps)}
-#     else:
-#         return "Fetching slide timestamps failed"
-    

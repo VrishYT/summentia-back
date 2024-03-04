@@ -1,6 +1,6 @@
 from faster_whisper import WhisperModel
 
-model_size = "large-v3"
+model_size = "tiny.en"
 
 # Run on GPU with FP16
 # model = WhisperModel(model_size, device="cuda", compute_type="float16")
@@ -26,6 +26,17 @@ def get_transcripts_from_segments(file_count, out_index=0):
         transcripts[i] = output
     
     return transcripts
-        
-if __name__ == "__main__":
-    get_transcripts_from_segments(7, 0)
+
+def transcribe(file_path):
+    print(file_path)
+    segments, info = model.transcribe(file_path, beam_size=5)
+    print("1")
+    # segments = list(segments)
+
+    print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
+
+    output = ""
+    for segment in segments:
+        output += segment.text
+
+    return output

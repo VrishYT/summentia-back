@@ -47,42 +47,6 @@ def get_frame(video_capture, frame_id):
     
     return frame
 
-# assumes that the path is a path to a directory
-def combine_timestamps(slide_transitions, frames, slides_json):
-    comparator = ImageComparator()
-    slides_info = json.loads(slides_json)
-    slides = slides_info["slides"]
-    num_slides = slides_info["num_slides"]
-    timestamps = []
-    frame_index = 0
-    next_frame_to_merge = 0
-    for slide_index in range(len(slides)):
-        if (len(frames) - 1 - frame_index == num_slides - 1 - slide_index):
-            while frame_index < len(frames):
-                start, end = slide_transitions[frame_index]
-                timestamps.append({"start": int(start), "end": int(end)})
-                frame_index +=1
-            break
-        
-        while frame_index < len(frames):
-            frame_path = frames[frame_index]
-            score = comparator.get_similarity_score(slides[slide_index].get("path"), frame_path)
-            if (score[0] > 0.8):
-                frame_index+=1
-            else:
-                second_score = comparator.get_similarity_score(slides[slide_index+1].get("path"), frame_path)
-                if (score > second_score):
-                    frame_index+=1
-                else:
-                    break
-        
-        start1, _ = slide_transitions[next_frame_to_merge]
-        _, end2 = slide_transitions[frame_index - 1]
-        timestamps.append({"start": int(start1), "end": int(end2)})
-        next_frame_to_merge = frame_index
-    
-    return timestamps
-
 def save_frame(frame, dir, file_name):
     if not os.path.exists(dir):
         os.mkdir(dir)
@@ -90,7 +54,7 @@ def save_frame(frame, dir, file_name):
     cv2.imwrite(dir + file_name, frame)
 
 # Identifies the timestamp of each slide, taken from a video
-def get_slide_timestamps(video_path, slides_json):
+def get_slide_timestamps(video_path, slides_json, output_folder):
     # Get bounding box of the video with the face overlay cropped out
     bounding_box = get_bounding_box(video_path)
 
@@ -109,33 +73,35 @@ def get_slide_timestamps(video_path, slides_json):
     frame_paths = []
     for slide_no, (start, end) in slide_transitions.items():
         frame = crop_frame(get_frame(cap, start), *bounding_box)
-        dir = "frames/"
+        dir = output_folder + "frames/"
         file_name = f"cropped_frame{slide_no}.png"
         save_frame(frame, dir, file_name)
         frame_paths.append(dir + file_name)
     print(slide_transitions)
     print(frame_paths)
+
     # combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json)
-    combined_timestamps = match_frames(slide_transitions, frame_paths, slides_json)
+    timestamps = match_frames(slide_transitions, frame_paths, slides_json)
     
-    return True, combined_timestamps
+    return True, timestamps
 
 def match_frames(slide_transitions, frames, slides_info):
     comparator = SlideComparator()
         
-    slides = slides_info["slides"]
-    num_slides = slides_info["num_slides"]
+    slides = list(filter(lambda slide: not bool(slide.get("squashed")), slides_info["slides"]))
+    num_slides = len(slides)
     
     currentSlide = 0
+    num_timestamps = 0
 
     def compareTillMatch(frameNo, slideNo, gap=1):
         if slideNo + gap < num_slides:
-            is_similar = comparator.is_similar(frames[i], slides[slideNo + gap].get("path"), False)
+            is_similar = comparator.is_similar(frames[i], slides[slideNo + gap], False)
             if is_similar:
                 return slideNo + gap
 
         if slideNo - gap >= 0:
-            is_similar = comparator.is_similar(frames[i], slides[slideNo - gap].get("path"), False)
+            is_similar = comparator.is_similar(frames[i], slides[slideNo - gap], False)
             if is_similar:
                 return slideNo - gap
 
@@ -146,12 +112,12 @@ def match_frames(slide_transitions, frames, slides_info):
 
     timestamps = {}
     for i in range(len(frames)):
-        is_similar = comparator.is_similar(frames[i], slides[currentSlide].get("path"), False)
+        is_similar = comparator.is_similar(frames[i], slides[currentSlide], False)
         if not is_similar:
             match = compareTillMatch(i, currentSlide)
 
             if (match != -1):
-                currentSlide = match
+                currentSlide = match # TODO: MERGE TIMESTAMPS
 
         start, end = slide_transitions[i]
             
@@ -159,25 +125,6 @@ def match_frames(slide_transitions, frames, slides_info):
             timestamps[currentSlide] = []
             
         timestamps[currentSlide].append({"start": int(start), "end": int(end)})
+        num_timestamps += 1
 
     return timestamps
-
-if __name__ == "__main__":
-    slides_json = """{
-        "num_slides": 7,
-        "slides": [
-            "Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-01.png",
-            "Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-02.png",
-            "Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-03.png",
-            "Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-04.png",
-            "Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-05.png",
-            "Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-06.png",
-            "Slides - Module 2 - K-NN and Decision Trees/Slides - Module 2 - K-NN and Decision Trees-07.png"
-        ]
-    }
-    """
-    result, slide_timestamps = get_slide_timestamps("video.mp4", slides_json)
-    if result:
-        print(slide_timestamps)
-    else:
-        print("Fetching slide timestamps failed")

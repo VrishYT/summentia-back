@@ -1,3 +1,4 @@
+import os
 import ffmpeg
 
 def extract_audio(video_path, timestamps, out_index=0):
@@ -8,12 +9,19 @@ def extract_audio(video_path, timestamps, out_index=0):
         out = input.output('video_%03d.mp3', audio_bitrate='96k', map='0', f='segment', segment_start_number=str(out_index), segment_frames=timestamps)
         out.run(capture_stdout = True, capture_stderr = True)
     except ffmpeg.Error as err:
-        # print()
-        # print('stdout:', err.stdout.decode('utf8'))
-        # print()
-        # print('stderr:', err.stderr.decode('utf8'))
-        # print('\n\nEND OF STUFF\n\n')
         raise err
-        
-if __name__ == "__main__":
-    extract_audio('video.mp4', '2000,3000,4000')
+
+def extract_single_audio(project_folder):
+    try:
+        mp3_path = os.path.join(project_folder, "audio.mp3")
+        if os.path.exists(mp3_path):
+            print(f"Deleting {mp3_path}...")
+            os.unlink(mp3_path)
+
+        input = ffmpeg.input(os.path.join(project_folder, "video.mp4"))
+        out = input.output(mp3_path, audio_bitrate='96k')
+        out.run(capture_stdout = True, capture_stderr = True)
+        return mp3_path
+    except ffmpeg.Error as err:
+        raise err
+    
