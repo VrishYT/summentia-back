@@ -47,42 +47,6 @@ def get_frame(video_capture, frame_id):
     
     return frame
 
-# assumes that the path is a path to a directory
-def combine_timestamps(slide_transitions, frames, slides_json):
-    comparator = ImageComparator()
-    slides_info = json.loads(slides_json)
-    slides = slides_info["slides"]
-    num_slides = slides_info["num_slides"]
-    timestamps = []
-    frame_index = 0
-    next_frame_to_merge = 0
-    for slide_index in range(len(slides)):
-        if (len(frames) - 1 - frame_index == num_slides - 1 - slide_index):
-            while frame_index < len(frames):
-                start, end = slide_transitions[frame_index]
-                timestamps.append({"start": int(start), "end": int(end)})
-                frame_index +=1
-            break
-        
-        while frame_index < len(frames):
-            frame_path = frames[frame_index]
-            score = comparator.get_similarity_score(slides[slide_index], frame_path)
-            if (score[0] > 0.8):
-                frame_index+=1
-            else:
-                second_score = comparator.get_similarity_score(slides[slide_index+1], frame_path)
-                if (score > second_score):
-                    frame_index+=1
-                else:
-                    break
-        
-        start1, _ = slide_transitions[next_frame_to_merge]
-        _, end2 = slide_transitions[frame_index - 1]
-        timestamps.append({"start": int(start1), "end": int(end2)})
-        next_frame_to_merge = frame_index
-    
-    return timestamps
-
 def save_frame(frame, dir, file_name):
     if not os.path.exists(dir):
         os.mkdir(dir)
@@ -120,6 +84,13 @@ def get_slide_timestamps(video_path, slides_json):
     
     return True, combined_timestamps
 
+def merge_timestamps(curr_frame, curr_slide, timestamps):
+    (_, end_curr) = curr_frame
+    start = timestamps[curr_slide][-1]["start"]
+    timestamps[curr_slide][-1] = {"start" : start, "end": end_curr}
+    
+    return timestamps
+
 def match_frames(slide_transitions, frames, slides_info):
     comparator = SlideComparator()
         
@@ -129,37 +100,44 @@ def match_frames(slide_transitions, frames, slides_info):
     currentSlide = 0
 
     def compareTillMatch(frameNo, slideNo, gap=1):
-        if slideNo + gap < num_slides:
+        can_go_forward = slideNo + gap < num_slides
+        can_go_back = slideNo - gap >= 0
+        
+        if can_go_forward:
             is_similar = comparator.is_similar(frames[i], slides[slideNo + gap], False)
             if is_similar:
                 return slideNo + gap
 
-        if slideNo - gap >= 0:
+        if can_go_back:
             is_similar = comparator.is_similar(frames[i], slides[slideNo - gap], False)
             if is_similar:
                 return slideNo - gap
 
-        if gap * 2  > num_slides:
+        if not can_go_back and not can_go_forward:
             return -1
         else:
-            return compareTillMatch(frameNo, slideNo, gap + 1)#
+            return compareTillMatch(frameNo, slideNo, gap + 1)
 
     timestamps = {}
     for i in range(len(frames)):
         is_similar = comparator.is_similar(frames[i], slides[currentSlide], False)
+        should_merge = True
         if not is_similar:
             match = compareTillMatch(i, currentSlide)
 
             if (match != -1):
+                should_merge = False
                 currentSlide = match
 
-        start, end = slide_transitions[i]
-            
         if (currentSlide not in timestamps):
             timestamps[currentSlide] = []
             
-        timestamps[currentSlide].append({"start": int(start), "end": int(end)})
-
+        if should_merge and len(timestamps[currentSlide]) != 0:
+            timestamps = merge_timestamps(slide_transitions[i], currentSlide, timestamps)
+        else: 
+            start, end = slide_transitions[i]
+            timestamps[currentSlide].append({"start": int(start), "end": int(end)})
+        
     return timestamps
 
 if __name__ == "__main__":

@@ -13,9 +13,10 @@ class FaceDetector():
     def detect_face(self, video):
         vidObj = cv2.VideoCapture(video)
         fps = vidObj.get(cv2.CAP_PROP_FPS)
+        total_frames = vidObj.get(cv2.CAP_PROP_FRAME_COUNT)
         curr_frame = 0
         boxes = []
-        while True:
+        while curr_frame <= total_frames:
             success, video_frame = vidObj.read()
             if not success:
                 break
@@ -28,6 +29,7 @@ class FaceDetector():
                     boxes = np.concatenate((boxes, bounding_box), axis=0)
                 
             curr_frame += fps
+            print(curr_frame)
             vidObj.set(cv2.CAP_PROP_POS_FRAMES, curr_frame)
                 
         return boxes
