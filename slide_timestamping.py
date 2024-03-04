@@ -54,7 +54,7 @@ def save_frame(frame, dir, file_name):
     cv2.imwrite(dir + file_name, frame)
 
 # Identifies the timestamp of each slide, taken from a video
-def get_slide_timestamps(video_path, slides_json):
+def get_slide_timestamps(video_path, slides_json, output_folder):
     # Get bounding box of the video with the face overlay cropped out
     bounding_box = get_bounding_box(video_path)
 
@@ -73,16 +73,17 @@ def get_slide_timestamps(video_path, slides_json):
     frame_paths = []
     for slide_no, (start, end) in slide_transitions.items():
         frame = crop_frame(get_frame(cap, start), *bounding_box)
-        dir = "frames/"
+        dir = output_folder + "frames/"
         file_name = f"cropped_frame{slide_no}.png"
         save_frame(frame, dir, file_name)
         frame_paths.append(dir + file_name)
     print(slide_transitions)
     print(frame_paths)
+
     # combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json)
-    combined_timestamps = match_frames(slide_transitions, frame_paths, slides_json)
+    timestamps = match_frames(slide_transitions, frame_paths, slides_json)
     
-    return True, combined_timestamps
+    return True, timestamps
 
 def merge_timestamps(curr_frame, curr_slide, timestamps):
     (_, end_curr) = curr_frame
@@ -94,10 +95,11 @@ def merge_timestamps(curr_frame, curr_slide, timestamps):
 def match_frames(slide_transitions, frames, slides_info):
     comparator = SlideComparator()
         
-    slides = slides_info["slides"]
-    num_slides = slides_info["num_slides"]
+    slides = list(filter(lambda slide: not bool(slide.get("squashed")), slides_info["slides"]))
+    num_slides = len(slides)
     
     currentSlide = 0
+    num_timestamps = 0
 
     def compareTillMatch(frameNo, slideNo, gap=1):
         can_go_forward = slideNo + gap < num_slides
