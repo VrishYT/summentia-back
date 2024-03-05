@@ -106,11 +106,11 @@ def process_genslides(project_folder, response):
         response.status = falcon.get_http_status(400)
         return
 
-    slides_json, timestamps = generate_slides(project_folder, transitions, frames)
+    slides, timestamps = generate_slides(project_folder, transitions, frames)
 
     timestamp_to_slide = {}
 
-    num_slides = slides_json.get("num_slides")
+    num_slides = len(slides)
 
     for slide_no in range(num_slides):
         for segment in timestamps[slide_no]:
@@ -125,10 +125,9 @@ def process_genslides(project_folder, response):
     extract_audio(project_folder, video_path, frame_options)
 
     transcripts = get_transcripts_from_segments(project_folder, len(keys), 0)
-    slide_nos = list(timestamps.values())
+    slide_nos = list(timestamp_to_slide.values())
 
     slides_data = {}
-    slides = slides_json.get("slides")
 
     for i, transcript in enumerate(transcripts):
         slide_no = slide_nos[i]
@@ -147,4 +146,4 @@ def process_genslides(project_folder, response):
                 "squashed": squashed_info.get('squashed')
             }
 
-    return {"slides": slides_json, "data": slides_data}
+    return {"slides": slides, "data": slides_data}
