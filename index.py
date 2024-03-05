@@ -72,7 +72,7 @@ def process_slides(project_folder, response):
 
     for i, transcript in enumerate(transcripts):
         slide_no = slide_nos[i]
-        if (slide_no in slides_data):
+        if slide_no in slides_data:
             data = slides_data[slide_no]
             print(data)
             data["transcript"].append(transcript)

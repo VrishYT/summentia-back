@@ -6,7 +6,6 @@ import ffmpeg
 def extract_audio(project_folder, video_path, timestamps, out_index=0):
     # timestamps string should be passed as a comma separated list of frames, no spaces
     try:
-        # ffmpeg.input(video_path).output('video_%03d.mp3', audio_bitrate='96k', map='0', f='segment', segment_start_number='1', segment_frames=timestamps).run()
         input = ffmpeg.input(video_path)
         audio_folder = os.path.join(project_folder, "audio/")
         if not (os.path.exists(audio_folder) and os.path.isdir(audio_folder)):
