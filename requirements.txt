@@ -11,3 +11,5 @@ scikit-learn
 matplotlib
 keras
 tensorflow
+ffmpeg-python
+faster_whisper
