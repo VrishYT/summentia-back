@@ -55,7 +55,7 @@ def save_frame(frame, dir, file_name):
     cv2.imwrite(dir + file_name, frame)
 
 # Identifies the timestamp of each slide, taken from a video
-def get_slide_timestamps(video_path, slides_json, output_folder):
+def get_slide_timestamps(video_path, output_folder):
     # Get bounding box of the video with the face overlay cropped out
     bounding_box = get_bounding_box(video_path)
 
@@ -146,6 +146,30 @@ def match_frames(slide_transitions, frames, slides_info):
             timestamps[currentSlide].append({"start": int(start), "end": int(end)})
         
     return timestamps
+
+def generate_slides(transitions, frames):
+    slides_json = {
+        "num_slides": len(frames),
+        "slides": frames
+    }
+    slides_info = squash_slides(slides_json)
+
+    squash_filter = [(idx, slide) for idx, slide in enumerate(slides_info["slides"]) if not bool(slide.get("squashed"))]    
+    slides = list(map(lambda slide: slide[1].get("path"), squash_filter))
+    print(slides)
+
+    slides_out = []
+    for slide in slides:
+        slides_out.append({
+            "path": slide,
+            "squashed": False
+        })
+
+    squashed_indexes = list(map(lambda slide: slide[0], squash_filter))
+    squashed_transitions = list(map(lambda x : [{"start": transitions[x][0], "end": transitions[x][1]}], squashed_indexes))
+    print(f"slides out: {slides_out}")
+    print(F"squashed transitions: {squashed_transitions}")
+    return slides_out, squashed_transitions
 
 if __name__ == "__main__":
     slides_json = """{
