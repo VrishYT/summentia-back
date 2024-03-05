@@ -150,30 +150,42 @@ def match_frames(slide_transitions, frames, slides_info):
 
     return timestamps
 
-
-def generate_slides(transitions, frames):
+def generate_slides(project_folder, transitions, frames):
     slides_json = {
         "num_slides": len(frames),
         "slides": frames
     }
     slides_info = squash_slides(slides_json)
 
-    squash_filter = [(idx, slide) for idx, slide in enumerate(slides_info["slides"]) if not bool(slide.get("squashed"))]
-    slides = list(map(lambda slide: slide[1].get("path"), squash_filter))
-    # print(slides)
+    squash_filter = [(idx, slide) for idx, slide in enumerate(slides_info["slides"]) if not bool(slide.get("squashed"))]    
+    squashed_indexes = list(map(lambda slide: slide[0], squash_filter))
+    squashed_transitions = list(map(lambda x : [{"start": transitions[x][0], "end": transitions[x][1]}], squashed_indexes))
+    
+    print(squashed_transitions)
 
     slides_out = []
-    for slide in slides:
+    cap = cv2.VideoCapture(os.path.join(project_folder, "video.mp4"))
+    slides_folder = os.path.join(project_folder, "slides/")
+    i=0
+
+    if not (os.path.exists(slides_folder) and os.path.isdir(slides_folder)):
+        os.mkdir(slides_folder)
+        
+    for transitions in squashed_transitions:
+        frame_id = (transitions[0]["start"] + transitions[0]["end"])//2
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
+        ret, frame = cap.read()
+        print(frame)
+        slide_path = os.path.join(slides_folder, f"slide_{i}.png")
+        cv2.imwrite(slide_path, frame)
         slides_out.append({
-            "path": slide,
+            "path": slide_path,
             "squashed": False
         })
-
-    squashed_indexes = list(map(lambda slide: slide[0], squash_filter))
-    squashed_transitions = list(
-        map(lambda x: [{"start": transitions[x][0], "end": transitions[x][1]}], squashed_indexes))
-    # print(f"slides out: {slides_out}")
-    # print(F"squashed transitions: {squashed_transitions}")
+        i+=1
+        
+    print(f"slides out: {slides_out}")
+    print(F"squashed transitions: {squashed_transitions}")
     return slides_out, squashed_transitions
 
 
