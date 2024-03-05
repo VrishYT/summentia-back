@@ -105,5 +105,5 @@ def process_genslides(project_folder, response):
         response.status = falcon.get_http_status(400)
         return
 
-    slides_json, timestamps = generate_slides(transitions, frames)
+    slides_json, timestamps = generate_slides(project_folder, transitions, frames)
     return slides_json, timestamps
