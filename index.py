@@ -42,10 +42,12 @@ def process_slides(project_folder, response):
     squashed_json = squash_slides(slides_json)
 
     video_path = os.path.join(project_folder, "video.mp4")
-    success, timestamps, num_frames = get_slide_timestamps(video_path, squashed_json, project_folder)
+    success, transitions, frames = get_slide_timestamps(video_path, project_folder)
     if not success:
         response.status = falcon.get_http_status(400)
         return
+
+    timestamps = match_frames(transitions, frames, squashed_json)
 
     timestamp_to_slide = {}
 
@@ -87,7 +89,7 @@ def process_slides(project_folder, response):
                 "squashed": squashed_info.get('squashed')
             }
 
-    return slides_data
+    return squashed_json, slides_data
 
 
 @hug.post('/process_noslides')
@@ -101,8 +103,14 @@ def process_noslides(project_folder):
 
 
 @hug.post('/process_genslides')
-def process_noslides(video_path):
-    pass
+def process_genslides(project_folder, response):
+    success, transitions, frames = get_slide_timestamps(os.path.join(project_folder, "video.mp4"), project_folder)
+    if not success:
+        response.status = falcon.get_http_status(400)
+        return
+
+    slides_json, timestamps = generate_slides(transitions, frames)
+    return slides_json, timestamps
 
 
 @hug.post('/transcribe')

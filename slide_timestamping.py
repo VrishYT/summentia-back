@@ -56,7 +56,7 @@ def save_frame(frame, dir, file_name):
 
 
 # Identifies the timestamp of each slide, taken from a video
-def get_slide_timestamps(video_path, output_folder):
+def get_slide_timestamps(video_path, project_folder):
     # Get bounding box of the video with the face overlay cropped out
     bounding_box = get_bounding_box(video_path)
 
@@ -75,7 +75,7 @@ def get_slide_timestamps(video_path, output_folder):
     frame_paths = []
     for slide_no, (start, end) in slide_transitions.items():
         frame = crop_frame(get_frame(cap, start), *bounding_box)
-        dir = output_folder + "frames/"
+        dir = project_folder + "frames/"
         file_name = f"cropped_frame{slide_no}.png"
         save_frame(frame, dir, file_name)
         frame_paths.append(dir + file_name)
@@ -136,7 +136,7 @@ def match_frames(slide_transitions, frames, slides_info):
         if not is_similar:
             match = compareTillMatch(i, currIndex)
 
-            if (match != -1):
+            if match != -1:
                 should_merge = False
                 currIndex = match
 
