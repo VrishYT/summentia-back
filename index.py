@@ -85,7 +85,7 @@ def process_slides(project_folder, response):
                 "squashed": squashed_info.get('squashed')
             }
 
-    return slides_data
+    return {"slides": slides, "data": slides_data}
 
 
 @hug.post('/process_noslides')
