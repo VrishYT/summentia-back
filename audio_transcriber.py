@@ -12,11 +12,11 @@ model_size = "tiny.en"
 model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
 def get_transcripts_from_segments(project_folder, file_count, out_index=0):
-    transcripts = {}
+    transcripts = []
     
     for i in range(out_index, file_count + out_index):
         output = ""
-        segments, info = model.transcribe(os.path.join(project_folder, str(i).zfill(3) + ".mp3"), beam_size=5)
+        segments, info = model.transcribe(os.path.join(os.path.join(project_folder, "audio/"), str(i).zfill(3) + ".mp3"), beam_size=5)
 
         print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
 
@@ -24,7 +24,7 @@ def get_transcripts_from_segments(project_folder, file_count, out_index=0):
             # print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
             output += segment.text
             
-        transcripts[i] = output
+        transcripts.append(output)
     
     return transcripts
 

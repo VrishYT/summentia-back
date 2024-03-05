@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import shutil
 import hug
 import falcon
@@ -43,53 +44,49 @@ def process_slides(project_folder, response):
         response.status = falcon.get_http_status(400)
         return
     
-    ## change timestamps format for extracting audio
+
     timestamp_to_slide = {}
-    for slide in timestamps:
-        # print(slide)
-        for segment in timestamps[slide]:
-            end_frame = segment["end"]
-            timestamp_to_slide[str(end_frame)] = int(slide)
-    print(timestamp_to_slide)
     
-    temp = {}
-    keys = list(timestamp_to_slide.keys())[:-1]
+    num_slides = squashed_json.get("num_slides")
+    
+    for slide_no in range(num_slides):
+        for segment in timestamps[slide_no]:
+            end_frame = segment["end"]
+            timestamp_to_slide[str(end_frame)] = int(slide_no)
+
+    
+    sorted_dict = OrderedDict(sorted(timestamp_to_slide.items(), key=lambda x:int(x[0])))
+    keys = sorted_dict.keys()
     frame_options = ','.join(keys)
 
-    # use Whisper to transcribe audio   
+    # use Whisper to transcribe audio
     extract_audio(project_folder, video_path, frame_options)
-    # transcripts = get_transcripts_from_segments(len(timestamp_to_slide), 0)
-    transcripts = get_transcripts_from_segments(project_folder, len(timestamp_to_slide), 0)
     
-    return_list = []
+    transcripts = get_transcripts_from_segments(project_folder, len(keys), 0)
     
-    for slide_key, segments in timestamps.items():
-        # get the slide image path and squashed variable 
-        slide_index = int(slide_key) - 1
-        slide_dict = squashed_json.get("slides")[slide_index]
-        slide_path = slide_dict.get("path")
-        slide_squashed = slide_dict.get("squashed")
-        
-        # get the timestamps
-        temp_cnt = 0
-        slide_transcripts = []
-        for timestamp, slide in timestamp_to_slide:
-            if str(slide) == slide_index:
-                slide_transcripts.append(transcripts[temp_cnt])
-            temp_cnt += 1
-        
-        # return the dictionary 
-        transcript_dict = {
-            "slide": slide_path,
-            "transcript": slide_transcripts,
-            "summary": [],
-            "squashed": slide_squashed
-        }
-        return_list.append(transcript_dict)
+    slide_nos = list(timestamp_to_slide.values())
     
-    return return_list
+    slides_data = {}
+    slides = squashed_json.get("slides")
+    
+    for i, transcript in enumerate(transcripts):
+        slide_no = slide_nos[i]
+        if (slide_no in slides_data):
+            data = slides_data[slide_no]
+            print(data)
+            data["transcript"].append(transcript)
+            print(data["transcript"])
+            slides_data[slide_no] = data
+        else:
+            squashed_info = slides[slide_no]
+            slides_data[slide_no] = {
+                "slide": squashed_info.get('path'),
+                "transcript": [transcript],
+                "summary": [],
+                "squashed": squashed_info.get('squashed')
+            }
 
-# [{slide: (slide_img_path) string, transcripts : string[], summary: string[], squashed: bool}]
+    return slides_data
 
 @hug.post('/process_noslides')
 def process_noslides(project_folder):

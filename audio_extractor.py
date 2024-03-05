@@ -6,9 +6,12 @@ def extract_audio(project_folder, video_path, timestamps, out_index=0):
     try:
         # ffmpeg.input(video_path).output('video_%03d.mp3', audio_bitrate='96k', map='0', f='segment', segment_start_number='1', segment_frames=timestamps).run()
         input = ffmpeg.input(video_path)
-        out = input.output(os.path.join(project_folder, "%03d.mp3"), audio_bitrate='96k', map='0', f='segment', segment_start_number=str(out_index), segment_frames=timestamps)
+        audio_folder = os.path.join(project_folder, "audio/")
+        if not (os.path.exists(audio_folder) and os.path.isdir(audio_folder)):
+            os.mkdir(audio_folder)
+        out = input.output(os.path.join(audio_folder, "%03d.mp3"), audio_bitrate='96k', map='0', f='segment', segment_start_number=str(out_index), segment_frames=timestamps)
         out.run(capture_stdout = True, capture_stderr = True)
-        
+
     except ffmpeg.Error as err:
         raise err
 
