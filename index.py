@@ -19,10 +19,6 @@ def process_response(request, response, resource):
     response.set_header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
 
 
-# @hug.post('/get_timestamps')
-# def get_timestamps(video_path, slides_path):
-#     slides_json = convert_pdf_to_png(slides_path, slides_path.split('.')[0])
-
 @hug.get()
 def handshake():
     print("Handshake completed.")
@@ -111,15 +107,3 @@ def process_genslides(project_folder, response):
 
     slides_json, timestamps = generate_slides(transitions, frames)
     return slides_json, timestamps
-
-
-@hug.post('/transcribe')
-def transcribe_video(video_path, slides_json):
-    _, timestamps = get_slide_timestamps(video_path, slides_json)
-    file_count = len(timestamps)
-    timestamps.pop()
-    frame_options = ','.join([str(t['end']) for t in timestamps])
-
-    extract_audio(video_path, frame_options)
-    transcripts = get_transcripts_from_segments(file_count, 0)
-    print(transcripts)
