@@ -1,24 +1,9 @@
 from slide_squashing import squash_slides
 from split_pdf import convert_pdf_to_png
 from slide_timestamping import get_slide_timestamps, match_frames
-#convert_pdf_to_png("test_slide_pdfs/english_history_slides.pdf", "test_slides/english_history/output_image")
-# # gradient_slides_json = {
-# #         "num_slides": 12,
-# #         "slides": [
-# #             "test_slides/gradient_descent/output_image_page_1.png",
-# #             "test_slides/gradient_descent/output_image_page_2.png",
-# #             "test_slides/gradient_descent/output_image_page_3.png",
-# #             "test_slides/gradient_descent/output_image_page_4.png",
-# #             "test_slides/gradient_descent/output_image_page_5.png",
-# #             "test_slides/gradient_descent/output_image_page_6.png",
-# #             "test_slides/gradient_descent/output_image_page_7.png",
-# #             "test_slides/gradient_descent/output_image_page_8.png",
-# #             "test_slides/gradient_descent/output_image_page_9.png",
-# #             "test_slides/gradient_descent/output_image_page_10.png",
-# #             "test_slides/gradient_descent/output_image_page_11.png",
-# #             "test_slides/gradient_descent/output_image_page_12.png"
-# #         ]
-# #     }
+gradient_slides_json = convert_pdf_to_png("test_slide_pdfs/gradient_descent_slides.pdf", "test_slides/gradient_descent/output_image")
+slides_info = squash_slides(gradient_slides_json)
+
 
 # # psychology_slides_json = {
 # #         "num_slides": 18,
@@ -67,7 +52,7 @@ from slide_timestamping import get_slide_timestamps, match_frames
 # #         ]
 # #     }
 
-# kernel_design_json = {
+# reinforcement_json = {
 #         "num_slides": 47,
 #         "slides": [
 #             "test_slides/reinforcement/output_image_page_1.png",

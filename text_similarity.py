@@ -9,6 +9,10 @@ def convert_to_text(image_path):
     return text
 
 def get_ocr_similarity_score(text1, text2):
+    # If both texts are whitespace then return a score 0
+    if text1.isspace() and text2.isspace():
+        return 0
+    
     # Convert the texts into TF-IDF vectors
     vectorizer = TfidfVectorizer()
     

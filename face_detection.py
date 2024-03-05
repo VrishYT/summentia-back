@@ -13,11 +13,11 @@ class FaceDetector():
     def detect_face(self, video):
         vidObj = cv2.VideoCapture(video)
         fps = vidObj.get(cv2.CAP_PROP_FPS)
+        total_frames = vidObj.get(cv2.CAP_PROP_FRAME_COUNT)
+        print(total_frames)
         curr_frame = 0
         boxes = []
-        print(vidObj.get(cv2.CAP_PROP_FRAME_COUNT))
-        while curr_frame < vidObj.get(cv2.CAP_PROP_FRAME_COUNT):
-            print(curr_frame)
+        while curr_frame <= total_frames:
             success, video_frame = vidObj.read()
             if not success:
                 break

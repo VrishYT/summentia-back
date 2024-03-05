@@ -15,7 +15,7 @@ def convert_pdf_to_png(pdf_path, output_path):
         page = pdf_document.load_page(page_number)
         
         # Render the page as an image
-        pix = page.get_pixmap(alpha=False)
+        pix = page.get_pixmap(alpha=False, dpi=300)
         
         # Convert image to PIL Image
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
@@ -23,7 +23,12 @@ def convert_pdf_to_png(pdf_path, output_path):
         # Save the image as PNG
         path = f"{output_path}_page_{page_number + 1}.png"
         img.save(path, "PNG")
-        json["slides"].append(path)
+        
+        slide_object = {
+            "path": path,
+            "squashed": False
+        }
+        json["slides"].append(slide_object)
 
     # Close the PDF
     pdf_document.close()
@@ -31,6 +36,6 @@ def convert_pdf_to_png(pdf_path, output_path):
     return json
 
 # # Example usage
-# pdf_path = 'Slides.pdf'
-# output_path = './slides_images/output_image'
+# pdf_path = 'RL 1.4 MDPs (1).pdf'
+# output_path = './split_db/output_image'
 # convert_pdf_to_png(pdf_path, output_path)
