@@ -1,3 +1,4 @@
+import os
 from faster_whisper import WhisperModel
 
 model_size = "tiny.en"
@@ -10,12 +11,12 @@ model_size = "tiny.en"
 # or run on CPU with INT8
 model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
-def get_transcripts_from_segments(file_count, out_index=0):
+def get_transcripts_from_segments(project_folder, file_count, out_index=0):
     transcripts = {}
     
     for i in range(out_index, file_count + out_index):
         output = ""
-        segments, info = model.transcribe("video_" + str(i).zfill(3) + ".mp3", beam_size=5)
+        segments, info = model.transcribe(os.path.join(project_folder, str(i).zfill(3) + ".mp3"), beam_size=5)
 
         print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
 

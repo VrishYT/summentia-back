@@ -42,15 +42,54 @@ def process_slides(project_folder, response):
     if not success:
         response.status = falcon.get_http_status(400)
         return
+    
+    ## change timestamps format for extracting audio
+    timestamp_to_slide = {}
+    for slide in timestamps:
+        # print(slide)
+        for segment in timestamps[slide]:
+            end_frame = segment["end"]
+            timestamp_to_slide[str(end_frame)] = int(slide)
+    print(timestamp_to_slide)
+    
+    temp = {}
+    keys = list(timestamp_to_slide.keys())[:-1]
+    frame_options = ','.join(keys)
 
-    # use timestamps to split audio in video 
-    file_count = len(timestamps)
-    timestamps.pop()
-    frame_options = ','.join([str(t['end']) for t in timestamps])
     # use Whisper to transcribe audio   
-    extract_audio(video_path, frame_options)
-    transcripts = get_transcripts_from_segments(file_count, 0)
-    return transcripts
+    extract_audio(project_folder, video_path, frame_options)
+    # transcripts = get_transcripts_from_segments(len(timestamp_to_slide), 0)
+    transcripts = get_transcripts_from_segments(project_folder, len(timestamp_to_slide), 0)
+    
+    return_list = []
+    
+    for slide_key, segments in timestamps.items():
+        # get the slide image path and squashed variable 
+        slide_index = int(slide_key) - 1
+        slide_dict = squashed_json.get("slides")[slide_index]
+        slide_path = slide_dict.get("path")
+        slide_squashed = slide_dict.get("squashed")
+        
+        # get the timestamps
+        temp_cnt = 0
+        slide_transcripts = []
+        for timestamp, slide in timestamp_to_slide:
+            if str(slide) == slide_index:
+                slide_transcripts.append(transcripts[temp_cnt])
+            temp_cnt += 1
+        
+        # return the dictionary 
+        transcript_dict = {
+            "slide": slide_path,
+            "transcript": slide_transcripts,
+            "summary": [],
+            "squashed": slide_squashed
+        }
+        return_list.append(transcript_dict)
+    
+    return return_list
+
+# [{slide: (slide_img_path) string, transcripts : string[], summary: string[], squashed: bool}]
 
 @hug.post('/process_noslides')
 def process_noslides(project_folder):
