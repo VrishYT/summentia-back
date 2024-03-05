@@ -113,13 +113,8 @@ def get_slide_timestamps(video_path, slides_json):
     print(slide_transitions)
     print(frame_paths)
 
-    if not slides_json:
-        return True, slide_transitions, frame_paths
+    return True, slide_transitions, frame_paths
 
-    # squashed_json = squash_slides(slides_json)
-    combined_timestamps = match_frames(slide_transitions, frame_paths, slides_json)
-    
-    return True, combined_timestamps
 
 def match_frames(slide_transitions, frames, slides_info):
     comparator = SlideComparator()

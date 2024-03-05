@@ -15,7 +15,9 @@ class FaceDetector():
         fps = vidObj.get(cv2.CAP_PROP_FPS)
         curr_frame = 0
         boxes = []
-        while True:
+        print(vidObj.get(cv2.CAP_PROP_FRAME_COUNT))
+        while curr_frame < vidObj.get(cv2.CAP_PROP_FRAME_COUNT):
+            print(curr_frame)
             success, video_frame = vidObj.read()
             if not success:
                 break
