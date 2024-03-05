@@ -80,11 +80,8 @@ def get_slide_timestamps(video_path, slides_json, output_folder):
         frame_paths.append(dir + file_name)
     print(slide_transitions)
     print(frame_paths)
-
-    # combined_timestamps = combine_timestamps(slide_transitions, frame_paths, slides_json)
-    timestamps = match_frames(slide_transitions, frame_paths, slides_json)
     
-    return True, timestamps
+    return True, slide_transitions, frame_paths
 
 def merge_timestamps(curr_frame, curr_slide, timestamps):
     (_, end_curr) = curr_frame

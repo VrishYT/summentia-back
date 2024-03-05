@@ -23,12 +23,7 @@ def convert_pdf_to_png(pdf_path, output_path):
         # Save the image as PNG
         path = f"{output_path}_page_{page_number + 1}.png"
         img.save(path, "PNG")
-        
-        slide_object = {
-            "path": path,
-            "squashed": False
-        }
-        json["slides"].append(slide_object)
+        json["slides"].append(path)
 
     # Close the PDF
     pdf_document.close()

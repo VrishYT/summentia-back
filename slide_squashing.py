@@ -8,17 +8,17 @@ def squash_slides(slides_info):
     squash_slides = []
 
     for slide_index in range(num_slides-1):
-        is_similar = comparator.is_similar(slides[slide_index].get("path"), slides[slide_index+1].get("path"))
+        is_similar = comparator.is_similar(slides[slide_index], slides[slide_index+1])
         new_slide_object = {}
 
         if (not is_similar):
             new_slide_object = {
-                "path": slides[slide_index].get("path"),
+                "path": slides[slide_index],
                 "squashed": False,
             }
         else:
             new_slide_object = {
-                "path": slides[slide_index].get("path"),
+                "path": slides[slide_index],
                 "squashed": True,
             }   
         squash_slides.append(new_slide_object)
