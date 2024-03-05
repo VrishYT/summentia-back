@@ -1,15 +1,16 @@
-from collections import OrderedDict
 import shutil
-import hug
+from collections import OrderedDict
+
 import falcon
-import json
-from slide_squashing import squash_slides
-from slide_timestamping import *
-from split_pdf import convert_pdf_to_png
+import hug
+
 from audio_extractor import extract_audio, extract_single_audio
 from audio_transcriber import get_transcripts_from_segments, transcribe
+from slide_timestamping import *
+from split_pdf import convert_pdf_to_png
 
 api = hug.API(__name__)
+
 
 @hug.response_middleware()
 def process_response(request, response, resource):
@@ -17,15 +18,17 @@ def process_response(request, response, resource):
     response.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     response.set_header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
 
+
 # @hug.post('/get_timestamps')
 # def get_timestamps(video_path, slides_path):
 #     slides_json = convert_pdf_to_png(slides_path, slides_path.split('.')[0])
-    
+
 @hug.get()
 def handshake():
     print("Handshake completed.")
     return True
-    
+
+
 @hug.post('/process_slides')
 def process_slides(project_folder, response):
     # handle slides to get timestamps
@@ -43,32 +46,30 @@ def process_slides(project_folder, response):
     if not success:
         response.status = falcon.get_http_status(400)
         return
-    
 
     timestamp_to_slide = {}
-    
+
     num_slides = squashed_json.get("num_slides")
-    
+
     for slide_no in range(num_slides):
         for segment in timestamps[slide_no]:
             end_frame = segment["end"]
             timestamp_to_slide[str(end_frame)] = int(slide_no)
 
-    
-    sorted_dict = OrderedDict(sorted(timestamp_to_slide.items(), key=lambda x:int(x[0])))
+    sorted_dict = OrderedDict(sorted(timestamp_to_slide.items(), key=lambda x: int(x[0])))
     keys = sorted_dict.keys()
     frame_options = ','.join(keys)
 
     # use Whisper to transcribe audio
     extract_audio(project_folder, video_path, frame_options)
-    
+
     transcripts = get_transcripts_from_segments(project_folder, len(keys), 0)
-    
+
     slide_nos = list(timestamp_to_slide.values())
-    
+
     slides_data = {}
     slides = squashed_json.get("slides")
-    
+
     for i, transcript in enumerate(transcripts):
         slide_no = slide_nos[i]
         if (slide_no in slides_data):
@@ -88,6 +89,7 @@ def process_slides(project_folder, response):
 
     return slides_data
 
+
 @hug.post('/process_noslides')
 def process_noslides(project_folder):
     print(f"Processing {project_folder}...")
@@ -97,17 +99,19 @@ def process_noslides(project_folder):
     print("Transcription complete.")
     return transcript
 
+
 @hug.post('/process_genslides')
 def process_noslides(video_path):
     pass
-    
+
+
 @hug.post('/transcribe')
 def transcribe_video(video_path, slides_json):
     _, timestamps = get_slide_timestamps(video_path, slides_json)
     file_count = len(timestamps)
     timestamps.pop()
     frame_options = ','.join([str(t['end']) for t in timestamps])
-    
+
     extract_audio(video_path, frame_options)
     transcripts = get_transcripts_from_segments(file_count, 0)
     print(transcripts)
