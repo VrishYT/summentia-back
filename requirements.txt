@@ -2,7 +2,7 @@ decord
 numpy
 opencv-python
 torch
-fitz
+PyMuPDF
 pytesseract
 hug
 falcon
