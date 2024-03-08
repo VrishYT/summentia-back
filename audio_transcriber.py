@@ -21,6 +21,8 @@ def get_transcripts_from_segments(project_folder, file_count, out_index=0):
         segments, info = model.transcribe(
             os.path.join(os.path.join(project_folder, "audio/"), str(i).zfill(3) + ".mp3"), beam_size=5)
 
+        segments = list(segments)
+
         print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
 
         for segment in segments:
@@ -36,7 +38,7 @@ def transcribe(file_path):
     print(file_path)
     segments, info = model.transcribe(file_path, beam_size=5)
     print("1")
-    # segments = list(segments)
+    segments = list(segments)
 
     print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
 
