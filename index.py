@@ -11,6 +11,8 @@ from split_pdf import convert_pdf_to_png
 
 api = hug.API(__name__)
 
+PROJECTS_FOLDER = "/mnt/c/Users/gabde/Documents/Uni/Third Year/COMP60021/Summentia/projects"
+
 
 @hug.response_middleware()
 def process_response(request, response, resource):
@@ -26,8 +28,9 @@ def handshake():
 
 
 @hug.post('/process_slides')
-def process_slides(project_folder, response):
+def process_slides(uuid, response):
     # handle slides to get timestamps
+    project_folder = os.path.join(PROJECTS_FOLDER, uuid)
     slides_folder = os.path.join(project_folder, "slides/")
     if os.path.exists(slides_folder) and os.path.isdir(slides_folder):
         shutil.rmtree(slides_folder)
@@ -89,7 +92,8 @@ def process_slides(project_folder, response):
 
 
 @hug.post('/process_noslides')
-def process_noslides(project_folder):
+def process_noslides(uuid):
+    project_folder = os.path.join(PROJECTS_FOLDER, uuid)
     print(f"Processing {project_folder}.")
     audio_path = extract_single_audio(project_folder)
     print(f"Audio extracted.")
@@ -99,7 +103,8 @@ def process_noslides(project_folder):
 
 
 @hug.post('/process_genslides')
-def process_genslides(project_folder, response):
+def process_genslides(uuid, response):
+    project_folder = os.path.join(PROJECTS_FOLDER, uuid)
     video_path = os.path.join(project_folder, "video.mp4")
     success, transitions, frames = get_slide_timestamps(video_path, project_folder)
     if not success:
@@ -121,6 +126,7 @@ def process_genslides(project_folder, response):
     keys = sorted_dict.keys()
     frame_options = ','.join(keys)
 
+    print("Transcribing audio")
     # use Whisper to transcribe audio
     extract_audio(project_folder, video_path, frame_options)
 
