@@ -83,8 +83,8 @@ def process_slides(uuid, response):
             squashed_info = slides[slide_no]
             slides_data[slide_no] = {
                 "slide": squashed_info.get('path'),
-                "transcript": [transcript],
-                "summary": [],
+                "transcripts": [transcript],
+                "summaries": [],
                 "squashed": squashed_info.get('squashed')
             }
 
@@ -147,8 +147,8 @@ def process_genslides(uuid, response):
             squashed_info = slides[slide_no]
             slides_data[slide_no] = {
                 "slide": squashed_info.get('path'),
-                "transcript": [transcript],
-                "summary": [],
+                "transcripts": [transcript],
+                "summaries": [],
                 "squashed": squashed_info.get('squashed')
             }
 
