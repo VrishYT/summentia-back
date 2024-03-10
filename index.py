@@ -88,7 +88,7 @@ def process_slides(uuid, response):
                 "squashed": squashed_info.get('squashed')
             }
 
-    return {"slides": slides, "data": slides_data}
+    return slides_data
 
 
 @hug.post('/process_noslides')
