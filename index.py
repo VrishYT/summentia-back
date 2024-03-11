@@ -69,24 +69,19 @@ def process_slides(uuid, response):
     slide_nos = list(timestamp_to_slide.values())
 
     slides_data = {}
-    slides = squashed_json.get("slides")
+
+    for i, slide in enumerate(squashed_json.get("slides")):
+        slides_data[i] = {
+            "slide": slide.get("path"),
+            "transcripts": [],
+            "summaries": [],
+            "squashed": slide.get('squashed')
+        }
 
     for i, transcript in enumerate(transcripts):
         slide_no = slide_nos[i]
-        if slide_no in slides_data:
-            data = slides_data[slide_no]
-            print(data)
-            data["transcripts"].append(transcript)
-            print(data["transcripts"])
-            slides_data[slide_no] = data
-        else:
-            squashed_info = slides[slide_no]
-            slides_data[slide_no] = {
-                "slide": squashed_info.get('path'),
-                "transcripts": [transcript],
-                "summaries": [],
-                "squashed": squashed_info.get('squashed')
-            }
+        slide_data = slides_data[slide_no]
+        slide_data["transcripts"].append(transcript)
 
     return slides_data
 
