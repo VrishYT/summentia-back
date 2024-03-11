@@ -29,23 +29,32 @@ def handshake():
 
 @hug.post('/process_slides')
 def process_slides(uuid, response):
+    print(f"Processing slides for project uuid: {uuid}")
     # handle slides to get timestamps
     project_folder = os.path.join(PROJECTS_FOLDER, uuid)
     slides_folder = os.path.join(project_folder, "slides/")
     if os.path.exists(slides_folder) and os.path.isdir(slides_folder):
         shutil.rmtree(slides_folder)
     os.mkdir(slides_folder)
+    
+    
+    print(f"Splitting pdf")
 
     slides_path = os.path.join(project_folder, "slides.pdf")
     slides_json = convert_pdf_to_png(slides_path, slides_folder)
+    
+    print(f"Squashing pdf")
     squashed_json = squash_slides(slides_json)
 
+    print(f"Getting slide timestamps")
     video_path = os.path.join(project_folder, "video.mp4")
     success, transitions, frames = get_slide_timestamps(video_path, project_folder)
     if not success:
         response.status = falcon.get_http_status(400)
         return
 
+
+    print(f"Matching frames")
     timestamps = match_frames(transitions, frames, squashed_json)
 
     timestamp_to_slide = {}
@@ -61,9 +70,14 @@ def process_slides(uuid, response):
     keys = sorted_dict.keys()
     frame_options = ','.join(keys)
 
+
+    print(f"Extracting audio")
     # use Whisper to transcribe audio
     extract_audio(project_folder, video_path, frame_options)
 
+
+
+    print(f"Transcribing")
     transcripts = get_transcripts_from_segments(project_folder, len(keys), 0)
 
     slide_nos = list(timestamp_to_slide.values())
@@ -88,6 +102,7 @@ def process_slides(uuid, response):
                 "squashed": squashed_info.get('squashed')
             }
 
+    print(f"--- Done --- \n{slides_data}")
     return slides_data
 
 
@@ -104,13 +119,17 @@ def process_noslides(uuid):
 
 @hug.post('/process_genslides')
 def process_genslides(uuid, response):
+    print(f"Gen slides for project uuid: {uuid}")
     project_folder = os.path.join(PROJECTS_FOLDER, uuid)
     video_path = os.path.join(project_folder, "video.mp4")
+    
+    print(f"Getting slide timestamps")
     success, transitions, frames = get_slide_timestamps(video_path, project_folder)
     if not success:
         response.status = falcon.get_http_status(400)
         return
 
+    print(f"Generating slides")
     slides, timestamps = generate_slides(project_folder, transitions, frames)
 
     timestamp_to_slide = {}
@@ -126,10 +145,11 @@ def process_genslides(uuid, response):
     keys = sorted_dict.keys()
     frame_options = ','.join(keys)
 
-    print("Transcribing audio")
+    print("Extracting audio")
     # use Whisper to transcribe audio
     extract_audio(project_folder, video_path, frame_options)
 
+    print("Getting timestamps")
     transcripts = get_transcripts_from_segments(project_folder, len(keys), 0)
     slide_nos = list(timestamp_to_slide.values())
 
@@ -152,4 +172,5 @@ def process_genslides(uuid, response):
                 "squashed": squashed_info.get('squashed')
             }
 
+    print(f"--- Done --- \n{slides_data}")
     return slides_data
