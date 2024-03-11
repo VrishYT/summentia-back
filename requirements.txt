@@ -2,7 +2,7 @@ decord
 numpy
 opencv-python
 torch
-fitz
+PyMuPDF == 1.21.1
 pytesseract
 hug
 falcon
