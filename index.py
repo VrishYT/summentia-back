@@ -90,8 +90,8 @@ def process_slides(uuid, response):
         if slide_no in slides_data:
             data = slides_data[slide_no]
             print(data)
-            data["transcript"].append(transcript)
-            print(data["transcript"])
+            data["transcripts"].append(transcript)
+            print(data["transcripts"])
             slides_data[slide_no] = data
         else:
             squashed_info = slides[slide_no]
@@ -160,8 +160,8 @@ def process_genslides(uuid, response):
         if slide_no in slides_data:
             data = slides_data[slide_no]
             print(data)
-            data["transcript"].append(transcript)
-            print(data["transcript"])
+            data["transcripts"].append(transcript)
+            print(data["transcripts"])
             slides_data[slide_no] = data
         else:
             squashed_info = slides[slide_no]
